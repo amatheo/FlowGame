@@ -47,10 +47,51 @@ public class Jeu extends Observable {
     }
 
     private CaseType drawCase(Point before, Point current, Point after){
-        if(before.x == current.x && after.x == current.x){
-            return CaseType.LR;
+        if(grid[current.x][current.y].getType() != null){
+            return CaseType.cross;
+        }else{
+            if(before.x == current.x){
+                if(after.x == current.x){
+                    return CaseType.LR;
+                }else{
+                    if(after.y > current.y){
+                        if(after.x < current.x){
+                            return CaseType.BR;
+                        }else{
+                            return CaseType.BL;
+                        }
+                    }else{
+                        if(after.x < current.x){
+                            return CaseType.TR;
+                        }else{
+                            return CaseType.TL;
+                        }
+                    }
+                }
+            }
+            if(before.y == current.y){
+                if(after.y == current.y){
+                    return CaseType.TB;
+                }else{
+                    if(after.x > current.x){
+                        if(after.y < current.y){
+                            return CaseType.TL;
+                        }else{
+                            return CaseType.BR;
+                        }
+                    }else{
+                        if(after.y < current.y){
+                            return CaseType.TR;
+                        }else{
+                            return CaseType.BL;
+                        }
+                    }
+                }
+
+            }
         }
-        //TODO Continue with all direction
+
+        return CaseType.empty;
 
     }
 

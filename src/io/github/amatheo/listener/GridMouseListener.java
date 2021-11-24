@@ -57,11 +57,32 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
 
         Point clickedPoint = caseVue.getModel().getPoint();
 
-        int size = jeu.tempPath.getPoints().size();
-        Point lastPoint = jeu.tempPath.getPoints().get(size);
+        /*
+        before
+            int size = jeu.tempPath.getPoints().size();
 
-        boolean isPointAlreadyInPath = jeu.tempPath.getPoints().contains(caseVue.getModel().getPoint());
+            Point lastPoint = jeu.tempPath.getPoints().get(size); //size-1 nan ?
+
+            boolean isPointAlreadyInPath = jeu.tempPath.getPoints().contains(caseVue.getModel().getPoint());
+            boolean isTypeAccepted = type == CaseType.empty; //TODO Add cross compatibility
+         */
+        //after je suis pas sur de ce que j'ai fait
+        //mais ducoup de ce que j'ai cru comprendre
+        //peut etre qu'au debut ya pas encre de tempPath donc ca trouve pas vu que c'est null
+        int size;
+        Point lastPoint;
+        boolean isPointAlreadyInPath;
+        if(jeu.tempPath == null){
+            size = 0;
+            lastPoint = null;
+            isPointAlreadyInPath = false;
+        }else{
+            size = jeu.tempPath.getPoints().size();
+            lastPoint = jeu.tempPath.getPoints().get(size);
+            isPointAlreadyInPath = jeu.tempPath.getPoints().contains(caseVue.getModel().getPoint());
+        }
         boolean isTypeAccepted = type == CaseType.empty; //TODO Add cross compatibility
+        //---
 
 
         if (!jeu.isDrawing){
