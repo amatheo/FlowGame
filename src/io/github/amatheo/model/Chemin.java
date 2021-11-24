@@ -1,29 +1,32 @@
 package io.github.amatheo.model;
 
-public class Chemin {
-    private CaseModel[] caseModels;
-    private int pathSize = 0;
+import java.awt.*;
+import java.util.ArrayList;
 
-    void addCase(CaseModel caseModel){
-        caseModels[pathSize] = caseModel;
-        pathSize++;
+public class Chemin {
+    private ArrayList<Point> pointArray;
+    public CaseModel startingTile;
+
+    public Chemin(CaseModel startingTile) {
+        this.startingTile = startingTile;
+        pointArray = new ArrayList<Point>();
+    }
+
+    public void addPoint(Point p){
+        pointArray.add(p);
     }
 
     /*
     * cherche la case correspondante a la position
     * puis change la taille accessible, les cases existent encore mais
-    * ne sont plus visible.
+    * ne sont plus visible et vont etre réecrit dessus.
     * */
-    void removeCase(int x, int y){
-        for (int i = 0; i < pathSize; i++){
-            if(caseModels[i].getPoint().y == y && caseModels[i].getPoint().x == x){
-                pathSize = i-1;
-            }
-        }
+    void removePoint(Point p){
+        pointArray.remove(p);
     }
 
-    CaseModel[] getPath(){
-        return caseModels;
+    public ArrayList<Point> getPoints(){
+        return pointArray;
     }
 
 

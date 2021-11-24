@@ -5,10 +5,10 @@ import io.github.amatheo.model.*;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.geom.Rectangle2D;
+import java.util.Objects;
 import java.util.Random;
 
 // TODO : redéfinir la fonction hashValue() et equals(Object) si vous souhaitez utiliser la hashmap de VueControleurGrille avec VueCase en clef
-
 public class CaseVue extends JPanel {
     private CaseModel caseModel;
     public CaseVue(CaseModel caseModel) {
@@ -90,9 +90,25 @@ public class CaseVue extends JPanel {
 
         }
     }
-    public String toString() {
-        return caseModel.getPoint().x + ", " + caseModel.getPoint().y;
 
+    public CaseModel getModel(){
+        return caseModel;
     }
 
+    public String toString() {
+        return caseModel.getPoint().x + ", " + caseModel.getPoint().y;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CaseVue caseVue = (CaseVue) o;
+        return Objects.equals(caseModel, caseVue.caseModel);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(caseModel);
+    }
 }

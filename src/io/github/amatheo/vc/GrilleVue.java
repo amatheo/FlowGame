@@ -16,12 +16,13 @@ public class GrilleVue extends JFrame implements Observer {
     // tableau de cases : i, j -> case
     private CaseVue[][] caseVue;
     // hashmap : case -> i, j
-    private HashMap<CaseVue, Point> hashmap; // voir (*)
+    public static HashMap<CaseVue, Point> hashmap; // voir (*)
     // currentComponent : par défaut, mouseReleased est exécutée pour le composant (JLabel) sur lequel elle a été enclenchée (mousePressed) même si celui-ci a changé
     // Afin d'accéder au composant sur lequel le bouton de souris est relaché, on le conserve avec la variable currentComponent à
     // chaque entrée dans un composant - voir (**)
     private JComponent currentComponent;
 
+    JPanel contentPane;
     public GrilleVue(Jeu jeu) {
         int size = jeu.getSize();
 
@@ -31,17 +32,24 @@ public class GrilleVue extends JFrame implements Observer {
         caseVue = new CaseVue[size][size];
         hashmap = new HashMap<CaseVue, Point>();
 
-        JPanel contentPane = new JPanel(new GridLayout(size, size));
-
-        for (int i = 0; i < size; i++) {
-            for (int j = 0; j < size; j++) {
+        contentPane = new JPanel(new GridLayout(size, size));
+        updateVue(jeu);
+        setContentPane(contentPane);
+    }
+    //Update view grid with current model grid
+    public void updateVue(Jeu jeu){
+        hashmap.clear();
+        contentPane.removeAll();
+        int size = jeu.getSize();
+        for (int j = 0; j < size; j++) {
+            for (int i = 0; i < size; i++) {
 
                 caseVue[i][j] = new CaseVue(jeu.getCaseModelAtCoordinate(i,j));
+                caseVue[i][j].addMouseListener(new GridMouseListener(jeu));
+
                 contentPane.add(caseVue[i][j]);
+                hashmap.put(caseVue[i][j], new Point(i, j));
 
-                hashmap.put(caseVue[i][j], new Point(j, i));
-
-                caseVue[i][j].addMouseListener(new GridMouseListener());
             }
         }
         setContentPane(contentPane);
@@ -49,6 +57,6 @@ public class GrilleVue extends JFrame implements Observer {
 
     @Override
     public void update(Observable o, Object arg) {
-
+        updateVue((Jeu)o);
     }
 }

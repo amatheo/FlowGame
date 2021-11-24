@@ -6,12 +6,16 @@ import java.util.Observable;
 import java.util.Observer;
 
 public class Main {
+    private static Jeu jeu;
+
+    public static Jeu getGameInstance(){
+        return jeu;
+    }
 
     public static void main(String[] args) {
-        Jeu j = new Jeu(5);
-        GrilleVue vue = new GrilleVue(j);
-        j.addObserver(vue);
+        jeu = new Jeu(5);
+        GrilleVue vue = new GrilleVue(jeu);
+        jeu.addObserver(vue);
         vue.setVisible(true);
-
     }
 }
