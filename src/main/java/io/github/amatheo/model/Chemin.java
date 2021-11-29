@@ -10,6 +10,7 @@ public class Chemin {
     public Chemin(CaseModel startingTile) {
         this.startingTile = startingTile;
         pointArray = new ArrayList<Point>();
+        pointArray.add(startingTile.getPoint()); // Add first tile to point array
     }
 
     public void addPoint(Point p){
