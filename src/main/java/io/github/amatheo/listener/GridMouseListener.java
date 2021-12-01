@@ -21,14 +21,14 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
     public void mouseClicked(MouseEvent e) {
         CaseVue caseVue = (CaseVue) e.getSource();
         CaseModel model = caseVue.getModel();
-        System.out.println("Clicked on : "+ model.getPoint());
+        System.out.println("Clicked on ("+ model.getType() +"): "+ model.getPoint());
         if(jeu.isDrawing){
             //Clicked on the same type of the starting type AND the case is not the same position as the startTile position
             if (
                     jeu.tempPath.startingTile.getType() == model.getType()
                     && model.getPoint() != jeu.tempPath.startingTile.getPoint()
             ){
-                System.out.println("Path sent to validation");
+                System.out.println("Path ended");
                 jeu.addPath(jeu.tempPath);
                 jeu.isDrawing = false;
             }else
@@ -37,7 +37,7 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
             }
         }else {
             //TODO add check to prevent creating path on empty case
-            System.out.println("New path started");
+            System.out.println("New path ("+model.getType()+") started");
             jeu.tempPath = new Chemin(model);
             jeu.isDrawing = true;
         }
@@ -59,9 +59,6 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
         CaseVue caseVue = (CaseVue) e.getSource();
         CaseType type = caseVue.getModel().getType();
 
-        boolean isTypeAccepted = type == CaseType.empty; //TODO Add cross compatibility
-
-
         if (jeu.isDrawing) {
             Point enteredPoint = caseVue.getModel().getPoint();
             Point lastPoint =  jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-1);
@@ -70,7 +67,7 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
                 //TODO Better delete
                 System.out.println("Delete Point");
             } else if (
-                    isTypeAccepted
+                    (type == CaseType.empty || type == jeu.tempPath.startingTile.getType())
                             && Jeu.arePointConnected(enteredPoint, lastPoint)
                             && Jeu.arePointConnected(lastPoint, enteredPoint)
             ) {

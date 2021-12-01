@@ -10,7 +10,6 @@ public enum Level {
     Level(String path) {
         ClassLoader classLoader = this.getClass().getClassLoader();
         URL url = classLoader.getResource("levels/"+path+".json");
-        System.out.println(url.toString());
-        this.path = path;
+        this.path = url.getPath();
     }
 }

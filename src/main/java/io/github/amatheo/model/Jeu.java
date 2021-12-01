@@ -9,8 +9,6 @@ import java.nio.file.Paths;
 import java.util.*;
 
 import java.awt.*;
-import java.util.List;
-import java.util.stream.Stream;
 
 public class Jeu extends Observable {
     private CaseModel[][] grid;
@@ -23,17 +21,22 @@ public class Jeu extends Observable {
 
     public Jeu(int size) {
         grid = new CaseModel[size][size];
-        initializeGrid();
-
         isDrawing = false;
+
         paths = new ArrayList<Chemin>();
+        linkedCaseType = new HashMap<>();
+
+        initializeGrid();
     }
 
     public void addPath(Chemin chemin){
         if (validatePath(chemin)){
             fillPathType(chemin);
             paths.add(chemin);
-            //linkedCaseType.put(chemin.startingTile.getType(), true);
+            linkedCaseType.put(chemin.startingTile.getType(), true);
+            if(checkWinState()){
+                System.out.println("WON");
+            }
         }
         setChanged();
         notifyObservers();
@@ -92,45 +95,55 @@ public class Jeu extends Observable {
     }
 
     private CaseType defineCaseType(Point before, Point current, Point after){
-            if(before.x == current.x){
-                if(after.x == current.x){
-                    return CaseType.TB;
+        if(before.x == current.x){
+            if(after.x == current.x) {
+                return CaseType.TB;
+            }
+            if(before.y < current.y){
+                //descend
+                if(after.x < current.x){
+                    //gauche
+                    return CaseType.TL;
                 }else{
-                    if(after.y > current.y){
-                        if(after.x < current.x){
-                            return CaseType.BL;
-                        }else{
-                            return CaseType.BR;
-                        }
-                    }else{
-                        if(after.x < current.x){
-                            return CaseType.BL;
-                        }else{
-                            return CaseType.BR;
-                        }
-                    }
+                    //droite
+                    return CaseType.TR;
+                }
+            }else{
+                //monte
+                if(after.x < current.x){
+                    //gauche
+                    return CaseType.BL;
+                }else{
+                    //droite
+                    return CaseType.BR;
                 }
             }
-            if(before.y == current.y){
-                if(after.y == current.y){
-                    return CaseType.LR;
+        }
+        if(before.y == current.y){
+            if(after.y == current.y){
+                return CaseType.LR;
+            }
+            if(before.x < current.x){
+                //gauche
+                if(after.y < current.y){
+                    //descent
+                    return CaseType.TL;
                 }else{
-                    if(after.x > current.x){
-                        if(after.y < current.y){
-                            return CaseType.BR;
-                        }else{
-                            return CaseType.BL;
-                        }
-                    }else{
-                        if(after.y < current.y){
-                            return CaseType.TR;
-                        }else{
-                            return CaseType.BL;
-                        }
-                    }
+                    //monte
+                    return CaseType.BL;
                 }
+            }else{
+                //droite
+                if(after.y < current.y){
+                    //descend
+                    return CaseType.TR;
+                }else{
+                    //monte
+                    return CaseType.BR;
+                }
+            }
 
-            }
+        }
         return CaseType.empty;
     }
 
@@ -144,9 +157,14 @@ public class Jeu extends Observable {
 
     private void initializeGrid(){
         for (int j = 0; j < grid.length; j++) {
-            for (int i = 0; i < grid.length; i++) {
+            for (int i = 0; i < grid[j].length; i++) {
                 grid[i][j] = new CaseModel(CaseType.empty, new Point(i,j));
             }
+        }
+        try {
+            loadLevel(Level.LEVEL1);
+        } catch (Exception ex){
+            ex.printStackTrace();
         }
         setChanged();
         notifyObservers();
@@ -182,8 +200,8 @@ public class Jeu extends Observable {
         return asDuplicate;
     }
 
+    //Load level add CaseType to link between. It doesn't fill the board with empty case;
     public void loadLevel(Level level) throws IOException {
-        try {
             // create Gson instance
             Gson gson = new Gson();
 
@@ -197,7 +215,6 @@ public class Jeu extends Observable {
                 JsonObject pointObj = point.getAsJsonObject();
 
                 CaseType type = gson.fromJson(pointObj.get("type"), CaseType.class);
-                System.out.println(type.toString());
                 int coordX = 0;
                 int coordY = 0;
 
@@ -206,22 +223,30 @@ public class Jeu extends Observable {
                     JsonObject coordObj = coord.getAsJsonObject();
                     coordX = coordObj.get("X").getAsInt();
                     coordY = coordObj.get("Y").getAsInt();
+                    setCaseTypeAtCoordinate(type, coordX, coordY);
                 }
-                setCaseTypeAtCoordinate(type, coordX, coordY);
+                linkedCaseType.put(type, false);
             }
-            //TODO fill linkedCasetype to false with key present in json
-            setChanged();
-            notifyObservers();
-        } catch (Exception ex) {
-            ex.printStackTrace();
-        }
     }
 
     private boolean checkWinState(){
-        //TODO Hashmap linked with boolean to a type
-        for (int i = 0; i < linkedCaseType.size(); i++) {
-            
+        //Check if all type are connected
+        boolean areAllTypeConnected = true;
+        for (Map.Entry<CaseType, Boolean> entry: linkedCaseType.entrySet()) {
+            if (entry.getValue() == Boolean.FALSE){
+                areAllTypeConnected = false;
+            }
         }
-        return false;
+
+        //Check if all case are not empty
+        boolean areCaseLeftEmpty = false;
+        for (int i = 0; i < grid.length; i++) {
+            for (int j = 0; j < grid[i].length; j++) {
+                if(getCaseTypeAtCoordinate(i,j) == CaseType.empty){
+                    areCaseLeftEmpty = true;
+                }
+            }
+        }
+        return areAllTypeConnected && !areCaseLeftEmpty;
     }
 }
