@@ -1,8 +1,16 @@
 package io.github.amatheo.model;
 
+import com.google.gson.*;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.*;
 
 import java.awt.*;
+import java.util.List;
+import java.util.stream.Stream;
 
 public class Jeu extends Observable {
     private CaseModel[][] grid;
@@ -10,6 +18,8 @@ public class Jeu extends Observable {
 
     public Chemin tempPath;
     public boolean isDrawing;
+
+    public HashMap<CaseType, Boolean> linkedCaseType;
 
     public Jeu(int size) {
         grid = new CaseModel[size][size];
@@ -21,13 +31,15 @@ public class Jeu extends Observable {
 
     public void addPath(Chemin chemin){
         if (validatePath(chemin)){
-            drawPath(chemin);
+            fillPathType(chemin);
+            paths.add(chemin);
+            //linkedCaseType.put(chemin.startingTile.getType(), true);
         }
         setChanged();
         notifyObservers();
     }
     //Check if path and type is valid
-    public boolean validatePath(Chemin chemin){
+    private boolean validatePath(Chemin chemin){
         Point firstPoint = chemin.getPoints().get(0);
         Point lastPoint = chemin.getPoints().get(chemin.getPoints().size()-1);
         CaseType cheminType = chemin.startingTile.getType();
@@ -59,54 +71,55 @@ public class Jeu extends Observable {
         if (
                 chemin.startingTile.getPoint() != lastPoint
                 && chemin.startingTile.getPoint() == firstPoint
-                && isDuplicate(chemin.getPoints().toArray(new Point[0])) //Check if there is duplicated point in the path ex : a loop
+                && !isDuplicate(chemin.getPoints()) //Check if there is duplicated point in the path ex : a loop
         ){
             areEndpointsValid = true;
         }
-
+        System.out.println("Does the path loop : "+isDuplicate(chemin.getPoints()));
+        System.out.println("TypeValid : "+ isTypeValid+"; PathValid : "+!isPathInvalid+"; EndpointValid : "+areEndpointsValid+";");
         return isTypeValid && !isPathInvalid && areEndpointsValid;
     }
 
-    private void drawPath(Chemin chemin){
+    private void fillPathType(Chemin chemin){
         for (int i = 1; i<chemin.getPoints().size()-1;i++){
             Point before = chemin.getPoints().get(i-1);
             Point current = chemin.getPoints().get(i);
             Point after = chemin.getPoints().get(i+1);
 
-            CaseType typeToSet = drawCase(before, current, after);
+            CaseType typeToSet = defineCaseType(before, current, after);
             setCaseTypeAtCoordinate(typeToSet, current.x, current.y);
         }
     }
 
-    private CaseType drawCase(Point before, Point current, Point after){
+    private CaseType defineCaseType(Point before, Point current, Point after){
             if(before.x == current.x){
                 if(after.x == current.x){
-                    return CaseType.LR;
+                    return CaseType.TB;
                 }else{
                     if(after.y > current.y){
                         if(after.x < current.x){
-                            return CaseType.BR;
-                        }else{
                             return CaseType.BL;
+                        }else{
+                            return CaseType.BR;
                         }
                     }else{
                         if(after.x < current.x){
-                            return CaseType.TR;
+                            return CaseType.BL;
                         }else{
-                            return CaseType.TL;
+                            return CaseType.BR;
                         }
                     }
                 }
             }
             if(before.y == current.y){
                 if(after.y == current.y){
-                    return CaseType.TB;
+                    return CaseType.LR;
                 }else{
                     if(after.x > current.x){
                         if(after.y < current.y){
-                            return CaseType.TL;
-                        }else{
                             return CaseType.BR;
+                        }else{
+                            return CaseType.BL;
                         }
                     }else{
                         if(after.y < current.y){
@@ -158,12 +171,57 @@ public class Jeu extends Observable {
         return false;
     }
 
-    public static <T> boolean isDuplicate(final T[] values) {
-        TreeSet set = new TreeSet<T>(Arrays.asList(values));
-        if (set.size() != values.length) {
-            return true;
-        } else {
-            return false;
+    public static <T> boolean isDuplicate(Collection<T> collection) {
+        boolean asDuplicate = false;
+        Set<T> set = new HashSet<>();
+        for(T t : collection) {
+            if (!set.add(t)){
+                asDuplicate = true;
+            }
         }
+        return asDuplicate;
+    }
+
+    public void loadLevel(Level level) throws IOException {
+        try {
+            // create Gson instance
+            Gson gson = new Gson();
+
+            // create a reader
+            Reader reader = Files.newBufferedReader(Paths.get(level.path));
+
+            JsonParser parser = new JsonParser();
+            JsonObject rootObj = parser.parse(reader).getAsJsonObject();
+            JsonArray pointsArray = rootObj.getAsJsonArray("points");
+            for (JsonElement point : pointsArray) {
+                JsonObject pointObj = point.getAsJsonObject();
+
+                CaseType type = gson.fromJson(pointObj.get("type"), CaseType.class);
+                System.out.println(type.toString());
+                int coordX = 0;
+                int coordY = 0;
+
+                JsonArray coordsArray = pointObj.getAsJsonArray("coords");
+                for (JsonElement coord : coordsArray){
+                    JsonObject coordObj = coord.getAsJsonObject();
+                    coordX = coordObj.get("X").getAsInt();
+                    coordY = coordObj.get("Y").getAsInt();
+                }
+                setCaseTypeAtCoordinate(type, coordX, coordY);
+            }
+            //TODO fill linkedCasetype to false with key present in json
+            setChanged();
+            notifyObservers();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+    }
+
+    private boolean checkWinState(){
+        //TODO Hashmap linked with boolean to a type
+        for (int i = 0; i < linkedCaseType.size(); i++) {
+            
+        }
+        return false;
     }
 }

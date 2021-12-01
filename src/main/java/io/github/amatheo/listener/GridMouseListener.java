@@ -22,8 +22,6 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
         CaseVue caseVue = (CaseVue) e.getSource();
         CaseModel model = caseVue.getModel();
         System.out.println("Clicked on : "+ model.getPoint());
-
-        System.out.println("Game drawing : "+jeu.isDrawing);
         if(jeu.isDrawing){
             //Clicked on the same type of the starting type AND the case is not the same position as the startTile position
             if (
@@ -31,13 +29,15 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
                     && model.getPoint() != jeu.tempPath.startingTile.getPoint()
             ){
                 System.out.println("Path sent to validation");
+                jeu.addPath(jeu.tempPath);
                 jeu.isDrawing = false;
             }else
             {
                 //Do nothing. Click while moving mouse and creating path
             }
         }else {
-            System.out.println("Created path. Start Point : "+ model.getPoint());
+            //TODO add check to prevent creating path on empty case
+            System.out.println("New path started");
             jeu.tempPath = new Chemin(model);
             jeu.isDrawing = true;
         }
@@ -63,17 +63,18 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
 
 
         if (jeu.isDrawing) {
-
             Point enteredPoint = caseVue.getModel().getPoint();
-            Point lastPoint = jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-1);
-
+            Point lastPoint =  jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-1);
+            System.out.println("Entered point "+ enteredPoint);
             if (enteredPoint == lastPoint) {
-                //Delete point
+                //TODO Better delete
+                System.out.println("Delete Point");
             } else if (
                     isTypeAccepted
-                            && !Jeu.arePointConnected(enteredPoint, lastPoint)
+                            && Jeu.arePointConnected(enteredPoint, lastPoint)
                             && Jeu.arePointConnected(lastPoint, enteredPoint)
             ) {
+                System.out.println("Added point "+ caseVue.getModel().getPoint());
                 jeu.tempPath.addPoint(caseVue.getModel().getPoint());
             }
         }
