@@ -16,11 +16,7 @@ public class GrilleVue extends JFrame implements Observer {
     // tableau de cases : i, j -> case
     private CaseVue[][] caseVue;
     // hashmap : case -> i, j
-    public static HashMap<CaseVue, Point> hashmap; // voir (*)
-    // currentComponent : par défaut, mouseReleased est exécutée pour le composant (JLabel) sur lequel elle a été enclenchée (mousePressed) même si celui-ci a changé
-    // Afin d'accéder au composant sur lequel le bouton de souris est relaché, on le conserve avec la variable currentComponent à
-    // chaque entrée dans un composant - voir (**)
-    private JComponent currentComponent;
+    public static HashMap<Point, CaseVue> caseVueHashmap;
 
     JPanel contentPane;
     public GrilleVue(Jeu jeu) {
@@ -30,7 +26,7 @@ public class GrilleVue extends JFrame implements Observer {
         setSize(size * PIXEL_PER_SQUARE, size * PIXEL_PER_SQUARE);
 
         caseVue = new CaseVue[size][size];
-        hashmap = new HashMap<CaseVue, Point>();
+        caseVueHashmap = new HashMap<Point, CaseVue>();
 
         contentPane = new JPanel(new GridLayout(size, size));
         updateVue(jeu);
@@ -38,7 +34,7 @@ public class GrilleVue extends JFrame implements Observer {
     }
     //Update view grid with current model grid
     public void updateVue(Jeu jeu){
-        hashmap.clear();
+        caseVueHashmap.clear();
         contentPane.removeAll();
         int size = jeu.getSize();
         for (int j = 0; j < size; j++) {
@@ -48,15 +44,31 @@ public class GrilleVue extends JFrame implements Observer {
                 caseVue[i][j].addMouseListener(new GridMouseListener(jeu));
 
                 contentPane.add(caseVue[i][j]);
-                hashmap.put(caseVue[i][j], new Point(i, j));
+                caseVueHashmap.put(new Point(i, j), caseVue[i][j]);
 
             }
         }
         setContentPane(contentPane);
     }
 
+    public void setSelectedAtPosition(int x, int y){
+        caseVue[x][y].isSelected = true;
+        caseVue[x][y].repaint();
+    }
     @Override
     public void update(Observable o, Object arg) {
-        updateVue((Jeu)o);
+        Jeu j = (Jeu) o;
+        updateVue(j);
+        if(j.isLevelFinished){
+            displayWin();
+        }
+    }
+
+    private void displayWin(){
+        int n = JOptionPane.showConfirmDialog(
+                null,
+                "You won ! Would you like to continue ?",
+                "Congartulation",
+                JOptionPane.YES_NO_OPTION);
     }
 }

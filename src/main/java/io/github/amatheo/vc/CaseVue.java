@@ -11,6 +11,7 @@ import java.util.Random;
 // TODO : redéfinir la fonction hashValue() et equals(Object) si vous souhaitez utiliser la hashmap de VueControleurGrille avec VueCase en clef
 public class CaseVue extends JPanel {
     private CaseModel caseModel;
+    public boolean isSelected = false;
     public CaseVue(CaseModel caseModel) {
         this.caseModel = caseModel;
     }
@@ -31,15 +32,31 @@ public class CaseVue extends JPanel {
         g.drawLine(getWidth()/2, getHeight()/2, getWidth(), getHeight()/2);
     }//right
 
+    public void setSelected(){
+        isSelected = true;
+        repaint();
+    }
 
+    public void deselect(){
+        isSelected = false;
+        repaint();
+    }
 
     @Override
     public void paintComponent(Graphics g) {
         g.clearRect(0, 0, getWidth(), getHeight());
 
+        if (isSelected){
+            g.setColor(Color.RED);
+            g.fillRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
+            g.setColor(Color.black);
+        }
+
         g.drawRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
 
         Rectangle2D deltaText =  g.getFont().getStringBounds("0", g.getFontMetrics().getFontRenderContext()); // "0" utilisé pour gabarit
+
+
 
         switch(caseModel.getType()) {
             case S1 :
@@ -87,7 +104,6 @@ public class CaseVue extends JPanel {
                 drawRight(g);
                 drawLeft(g);
                 break;
-
         }
     }
 

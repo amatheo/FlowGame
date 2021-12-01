@@ -5,16 +5,24 @@ import io.github.amatheo.model.CaseType;
 import io.github.amatheo.model.Chemin;
 import io.github.amatheo.model.Jeu;
 import io.github.amatheo.vc.CaseVue;
+import io.github.amatheo.vc.GrilleVue;
 
 import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 
 
 public class GridMouseListener implements MouseListener, MouseWheelListener, MouseMotionListener {
     private Jeu jeu;
-
+    ArrayList<CaseType> validCaseType;
     public GridMouseListener(Jeu jeu) {
         this.jeu = jeu;
+        validCaseType = new ArrayList<>();
+        validCaseType.add(CaseType.S1);
+        validCaseType.add(CaseType.S2);
+        validCaseType.add(CaseType.S3);
+        validCaseType.add(CaseType.S4);
+        validCaseType.add(CaseType.S5);
     }
 
     @Override
@@ -22,6 +30,7 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
         CaseVue caseVue = (CaseVue) e.getSource();
         CaseModel model = caseVue.getModel();
         System.out.println("Clicked on ("+ model.getType() +"): "+ model.getPoint());
+
         if(jeu.isDrawing){
             //Clicked on the same type of the starting type AND the case is not the same position as the startTile position
             if (
@@ -35,9 +44,11 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
             {
                 //Do nothing. Click while moving mouse and creating path
             }
-        }else {
-            //TODO add check to prevent creating path on empty case
+        }else if (
+                validCaseType.contains(model.getType())
+        ){
             System.out.println("New path ("+model.getType()+") started");
+            caseVue.setSelected();
             jeu.tempPath = new Chemin(model);
             jeu.isDrawing = true;
         }
@@ -62,16 +73,23 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
         if (jeu.isDrawing) {
             Point enteredPoint = caseVue.getModel().getPoint();
             Point lastPoint =  jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-1);
+            Point preLastPoint = null;
+            if (jeu.tempPath.getPoints().size() > 2){
+                preLastPoint = jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-2);
+            }
             System.out.println("Entered point "+ enteredPoint);
-            if (enteredPoint == lastPoint) {
-                //TODO Better delete
+            if (enteredPoint == preLastPoint) {
                 System.out.println("Delete Point");
+                GrilleVue.caseVueHashmap.get(lastPoint).deselect();
+                jeu.tempPath.getPoints().remove(lastPoint);
+
             } else if (
                     (type == CaseType.empty || type == jeu.tempPath.startingTile.getType())
                             && Jeu.arePointConnected(enteredPoint, lastPoint)
                             && Jeu.arePointConnected(lastPoint, enteredPoint)
             ) {
                 System.out.println("Added point "+ caseVue.getModel().getPoint());
+                caseVue.setSelected();
                 jeu.tempPath.addPoint(caseVue.getModel().getPoint());
             }
         }

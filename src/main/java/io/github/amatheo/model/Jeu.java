@@ -2,6 +2,7 @@ package io.github.amatheo.model;
 
 import com.google.gson.*;
 
+import javax.swing.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.nio.file.Files;
@@ -11,6 +12,7 @@ import java.util.*;
 import java.awt.*;
 
 public class Jeu extends Observable {
+    public boolean isLevelFinished;
     private CaseModel[][] grid;
     private ArrayList<Chemin> paths;
 
@@ -26,7 +28,8 @@ public class Jeu extends Observable {
         paths = new ArrayList<Chemin>();
         linkedCaseType = new HashMap<>();
 
-        initializeGrid();
+        loadLevel(Level.LEVEL1);
+
     }
 
     public void addPath(Chemin chemin){
@@ -34,9 +37,7 @@ public class Jeu extends Observable {
             fillPathType(chemin);
             paths.add(chemin);
             linkedCaseType.put(chemin.startingTile.getType(), true);
-            if(checkWinState()){
-                System.out.println("WON");
-            }
+            isLevelFinished = checkWinState();
         }
         setChanged();
         notifyObservers();
@@ -156,18 +157,16 @@ public class Jeu extends Observable {
     }
 
     private void initializeGrid(){
+        System.out.println("Resetting grid");
+        isDrawing = false;
+        paths = new ArrayList<Chemin>();
+        linkedCaseType = new HashMap<>();
+        
         for (int j = 0; j < grid.length; j++) {
             for (int i = 0; i < grid[j].length; i++) {
                 grid[i][j] = new CaseModel(CaseType.empty, new Point(i,j));
             }
         }
-        try {
-            loadLevel(Level.LEVEL1);
-        } catch (Exception ex){
-            ex.printStackTrace();
-        }
-        setChanged();
-        notifyObservers();
     }
 
     public CaseModel getCaseModelAtCoordinate(int x, int y){
@@ -200,13 +199,20 @@ public class Jeu extends Observable {
         return asDuplicate;
     }
 
-    //Load level add CaseType to link between. It doesn't fill the board with empty case;
-    public void loadLevel(Level level) throws IOException {
+    //Fill grid model with empty case then fill it with level case in json
+    public void loadLevel(String path) {
+            initializeGrid();
+        System.out.println("Loading level located in : "+ path);
             // create Gson instance
             Gson gson = new Gson();
 
             // create a reader
-            Reader reader = Files.newBufferedReader(Paths.get(level.path));
+        Reader reader = null;
+        try {
+            reader = Files.newBufferedReader(Paths.get(path));
+        }catch (Exception ex){
+            ex.printStackTrace();
+        }
 
             JsonParser parser = new JsonParser();
             JsonObject rootObj = parser.parse(reader).getAsJsonObject();
@@ -227,8 +233,12 @@ public class Jeu extends Observable {
                 }
                 linkedCaseType.put(type, false);
             }
+            setChanged();
+            notifyObservers();
     }
-
+    public void loadLevel (Level level){
+        loadLevel(level.path);
+    }
     private boolean checkWinState(){
         //Check if all type are connected
         boolean areAllTypeConnected = true;

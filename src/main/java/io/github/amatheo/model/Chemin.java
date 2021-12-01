@@ -26,9 +26,17 @@ public class Chemin {
         pointArray.remove(p);
     }
 
+    void removePointAndAllAfter(Point p){
+        for (int i = pointArray.size(); i > 0; i--) {
+            if(pointArray.get(i) != p){
+                pointArray.remove(i);
+            }
+            if(pointArray.get(i) == p){
+                pointArray.remove(i);
+            }
+        }
+    }
     public ArrayList<Point> getPoints(){
         return pointArray;
     }
-
-
 }
