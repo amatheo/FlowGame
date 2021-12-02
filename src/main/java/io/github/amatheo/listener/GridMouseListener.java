@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 
 public class GridMouseListener implements MouseListener, MouseWheelListener, MouseMotionListener {
-    private Jeu jeu;
+    private final Jeu jeu;
     ArrayList<CaseType> validCaseType;
     public GridMouseListener(Jeu jeu) {
         this.jeu = jeu;
@@ -44,13 +44,19 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
             {
                 //Do nothing. Click while moving mouse and creating path
             }
-        }else if (
-                validCaseType.contains(model.getType())
-        ){
-            System.out.println("New path ("+model.getType()+") started");
-            caseVue.setSelected();
-            jeu.tempPath = new Chemin(model);
-            jeu.isDrawing = true;
+        }else {
+            if (jeu.isPointOnAnExistingPath(model.getPoint())){
+                Chemin parent = jeu.getParentPathOfPoint(model.getPoint());
+                jeu.deletePath(parent);
+            }else if (
+                    validCaseType.contains(model.getType())
+                            && !jeu.linkedCaseType.get(model.getType())
+            ){
+                System.out.println("New path (" + model.getType() + ") started");
+                caseVue.setSelected();
+                jeu.tempPath = new Chemin(model);
+                jeu.isDrawing = true;
+            }
         }
     }
 
@@ -69,20 +75,26 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
 
         CaseVue caseVue = (CaseVue) e.getSource();
         CaseType type = caseVue.getModel().getType();
-
         if (jeu.isDrawing) {
             Point enteredPoint = caseVue.getModel().getPoint();
             Point lastPoint =  jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-1);
             Point preLastPoint = null;
+
             if (jeu.tempPath.getPoints().size() > 2){
                 preLastPoint = jeu.tempPath.getPoints().get(jeu.tempPath.getPoints().size()-2);
             }
-            System.out.println("Entered point "+ enteredPoint);
-            if (enteredPoint == preLastPoint) {
-                System.out.println("Delete Point");
+            //In case of loop deselect and remove all point prior to this one
+            if (jeu.tempPath.getPoints().contains(enteredPoint)){
+                int indexPoint = jeu.tempPath.getPoints().indexOf(enteredPoint);
+                for (int i = jeu.tempPath.getPoints().size()-1; i > indexPoint; i--) {
+                    Point p = jeu.tempPath.getPoints().get(i);
+                    jeu.tempPath.getPoints().remove(i);
+                    GrilleVue.caseVueHashmap.get(p).deselect();
+                }
+                //Delete last case
+            }else if (enteredPoint == preLastPoint){
                 GrilleVue.caseVueHashmap.get(lastPoint).deselect();
                 jeu.tempPath.getPoints().remove(lastPoint);
-
             } else if (
                     (type == CaseType.empty || type == jeu.tempPath.startingTile.getType())
                             && Jeu.arePointConnected(enteredPoint, lastPoint)
@@ -90,7 +102,7 @@ public class GridMouseListener implements MouseListener, MouseWheelListener, Mou
             ) {
                 System.out.println("Added point "+ caseVue.getModel().getPoint());
                 caseVue.setSelected();
-                jeu.tempPath.addPoint(caseVue.getModel().getPoint());
+                jeu.tempPath.addPoint(enteredPoint);
             }
         }
     }

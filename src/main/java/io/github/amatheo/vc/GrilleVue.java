@@ -60,6 +60,7 @@ public class GrilleVue extends JFrame implements Observer {
         Jeu j = (Jeu) o;
         updateVue(j);
         if(j.isLevelFinished){
+            j.isLevelFinished = false;
             displayWin();
         }
     }

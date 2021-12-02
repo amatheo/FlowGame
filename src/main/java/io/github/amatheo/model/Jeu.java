@@ -76,11 +76,10 @@ public class Jeu extends Observable {
                 chemin.startingTile.getPoint() != lastPoint
                 && chemin.startingTile.getPoint() == firstPoint
                 && !isDuplicate(chemin.getPoints()) //Check if there is duplicated point in the path ex : a loop
-        ){
+        ) {
             areEndpointsValid = true;
         }
-        System.out.println("Does the path loop : "+isDuplicate(chemin.getPoints()));
-        System.out.println("TypeValid : "+ isTypeValid+"; PathValid : "+!isPathInvalid+"; EndpointValid : "+areEndpointsValid+";");
+        System.out.println("Duplicate : "+isDuplicate(chemin.getPoints())+"; TypeValid : "+ isTypeValid+"; PathValid : "+!isPathInvalid+"; EndpointValid : "+areEndpointsValid+";");
         return isTypeValid && !isPathInvalid && areEndpointsValid;
     }
 
@@ -239,6 +238,7 @@ public class Jeu extends Observable {
     public void loadLevel (Level level){
         loadLevel(level.path);
     }
+
     private boolean checkWinState(){
         //Check if all type are connected
         boolean areAllTypeConnected = true;
@@ -258,5 +258,39 @@ public class Jeu extends Observable {
             }
         }
         return areAllTypeConnected && !areCaseLeftEmpty;
+    }
+
+    public boolean isPointOnAnExistingPath(Point p1){
+        boolean isAlreadyUsed = false;
+        for (Chemin c : paths){
+            for (Point p2 : c.getPoints()){
+                if (p1 == p2){
+                    isAlreadyUsed = true;
+                }
+            }
+        }
+        return isAlreadyUsed;
+    }
+    public Chemin getParentPathOfPoint(Point p1){
+        for (Chemin c : paths){
+            for (Point p2 : c.getPoints()){
+                if (p1 == p2){
+                    return c;
+                }
+            }
+        }
+        return null;
+    }
+
+    public void deletePath(Chemin c){
+        //Reset all tile except for first and last tile
+        for (int i = 1; i < c.getPoints().size()-1 ; i++) {
+            Point p = c.getPoints().get(i);
+            setCaseTypeAtCoordinate(CaseType.empty, p.x, p.y);
+        }
+        paths.remove(c);
+        linkedCaseType.put(c.startingTile.getType(), false);
+        setChanged();
+        notifyObservers();
     }
 }
