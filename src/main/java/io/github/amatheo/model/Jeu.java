@@ -36,7 +36,7 @@ public class Jeu extends Observable {
         if (validatePath(chemin)){
             fillPathType(chemin);
             paths.add(chemin);
-            linkedCaseType.put(chemin.startingTile.getType(), true);
+            linkedCaseType.put(chemin.getPathType(), true);
             isLevelFinished = checkWinState();
         }
         setChanged();
@@ -44,9 +44,9 @@ public class Jeu extends Observable {
     }
     //Check if path and type is valid
     private boolean validatePath(Chemin chemin){
-        Point firstPoint = chemin.getPoints().get(0);
-        Point lastPoint = chemin.getPoints().get(chemin.getPoints().size()-1);
-        CaseType cheminType = chemin.startingTile.getType();
+        Point firstPoint = chemin.getFirstPoint();
+        Point lastPoint = chemin.getLastPoint();
+        CaseType cheminType = chemin.getPathType();
 
         boolean isTypeValid = false;
         if (
@@ -61,11 +61,11 @@ public class Jeu extends Observable {
             Point before = chemin.getPoints().get(i-1);
             Point current = chemin.getPoints().get(i);
             Point after = chemin.getPoints().get(i+1);
-
+            CaseType currentType = getCaseTypeAtCoordinate(current.x, current.y);
             if (!(
                     arePointConnected(before, current)
                     && arePointConnected(current, after)
-                    && getCaseTypeAtCoordinate(current.x, current.y) == CaseType.empty
+                    && (currentType == CaseType.empty || currentType == CaseType.cross)
             )){
                 isPathInvalid = true;
             }
@@ -73,8 +73,7 @@ public class Jeu extends Observable {
         //Check if point of start is not same as the path endpoint but the same one as the path one
         boolean areEndpointsValid = false;
         if (
-                chemin.startingTile.getPoint() != lastPoint
-                && chemin.startingTile.getPoint() == firstPoint
+                chemin.getFirstPoint() != lastPoint
                 && !isDuplicate(chemin.getPoints()) //Check if there is duplicated point in the path ex : a loop
         ) {
             areEndpointsValid = true;
@@ -95,6 +94,10 @@ public class Jeu extends Observable {
     }
 
     private CaseType defineCaseType(Point before, Point current, Point after){
+        //If a cross is already setup
+        if (getCaseTypeAtCoordinate(current.x, current.y) == CaseType.cross){
+            return CaseType.cross;
+        }
         if(before.x == current.x){
             if(after.x == current.x) {
                 return CaseType.TB;
@@ -271,6 +274,7 @@ public class Jeu extends Observable {
         }
         return isAlreadyUsed;
     }
+    //TODO for amelioration : it can return list of all path is in (in case of cross)
     public Chemin getParentPathOfPoint(Point p1){
         for (Chemin c : paths){
             for (Point p2 : c.getPoints()){
@@ -286,10 +290,14 @@ public class Jeu extends Observable {
         //Reset all tile except for first and last tile
         for (int i = 1; i < c.getPoints().size()-1 ; i++) {
             Point p = c.getPoints().get(i);
-            setCaseTypeAtCoordinate(CaseType.empty, p.x, p.y);
+            CaseType toReset = CaseType.empty;
+            if (getCaseTypeAtCoordinate(p.x, p.y) == CaseType.cross){
+                toReset = CaseType.cross;
+            }
+            setCaseTypeAtCoordinate(toReset, p.x, p.y);
         }
         paths.remove(c);
-        linkedCaseType.put(c.startingTile.getType(), false);
+        linkedCaseType.put(c.getPathType(), false);
         setChanged();
         notifyObservers();
     }

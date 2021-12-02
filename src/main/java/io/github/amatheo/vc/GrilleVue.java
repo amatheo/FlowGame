@@ -67,9 +67,9 @@ public class GrilleVue extends JFrame implements Observer {
 
     private void displayWin(){
         int n = JOptionPane.showConfirmDialog(
-                null,
-                "You won ! Would you like to continue ?",
+                this,
+                "You won ! Now try another level.",
                 "Congartulation",
-                JOptionPane.YES_NO_OPTION);
+                JOptionPane.CLOSED_OPTION);
     }
 }

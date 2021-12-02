@@ -8,7 +8,6 @@ import java.awt.geom.Rectangle2D;
 import java.util.Objects;
 import java.util.Random;
 
-// TODO : redéfinir la fonction hashValue() et equals(Object) si vous souhaitez utiliser la hashmap de VueControleurGrille avec VueCase en clef
 public class CaseVue extends JPanel {
     private CaseModel caseModel;
     public boolean isSelected = false;
