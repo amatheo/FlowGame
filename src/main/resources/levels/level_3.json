@@ -1,10 +1,10 @@
 {
-  "points": [
+  "goals": [
     {
       "type": "S1",
       "coords": [
         {
-          "X": 2,
+          "X": 4,
           "Y": 4
         },
         {
