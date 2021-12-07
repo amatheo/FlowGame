@@ -1,7 +1,8 @@
 package io.github.amatheo.model;
 
+import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
+import java.nio.file.Paths;
 
 public enum Level {
     LEVEL1("level_1"),
@@ -11,11 +12,10 @@ public enum Level {
     LEVEL5("level_3");
 
     public String path = null;
-    Level(String path) {
-        ClassLoader classLoader = this.getClass().getClassLoader();
-        URL url = classLoader.getResource("levels/"+path+".json");
+    Level(String filename) {
         try {
-            this.path = url.toURI().getPath();
+            URI uri = ClassLoader.getSystemResource("levels/"+filename+".json").toURI();
+            path = Paths.get(uri).toString();
         } catch (URISyntaxException e) {
             e.printStackTrace();
         }
