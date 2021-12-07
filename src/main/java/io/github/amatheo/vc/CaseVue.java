@@ -103,6 +103,9 @@ public class CaseVue extends JPanel {
                 drawRight(g);
                 drawLeft(g);
                 break;
+            case BLOCK:
+                g.fillRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
+                break;
         }
     }
 
