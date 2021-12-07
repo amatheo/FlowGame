@@ -255,6 +255,17 @@ public class Jeu extends Observable {
         loadLevel(level.path);
     }
 
+    public int getCountOfLinkedType(){
+        int completed = 0;
+        for (Map.Entry<CaseType, Boolean> entry : linkedCaseType.entrySet()) {
+            if (entry.getValue() == Boolean.TRUE) {
+                completed ++;
+            }
+        }
+        return completed;
+    }
+
+    
     private boolean checkWinState() {
         //Check if all type are connected
         boolean areAllTypeConnected = true;
