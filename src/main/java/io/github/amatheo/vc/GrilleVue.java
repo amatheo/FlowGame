@@ -1,6 +1,7 @@
 package io.github.amatheo.vc;
 
 import io.github.amatheo.listener.GridMouseListener;
+import io.github.amatheo.model.CaseType;
 import io.github.amatheo.model.Jeu;
 
 import javax.swing.*;
@@ -8,6 +9,7 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -17,7 +19,6 @@ public class GrilleVue extends JFrame implements Observer {
     private CaseVue[][] caseVue;
     // hashmap : case -> i, j
     public static HashMap<Point, CaseVue> caseVueHashmap;
-
     JPanel contentPane;
     public GrilleVue(Jeu jeu) {
         int size = jeu.getSize();
@@ -59,12 +60,16 @@ public class GrilleVue extends JFrame implements Observer {
     public void update(Observable o, Object arg) {
         Jeu j = (Jeu) o;
         updateVue(j);
+        updateWindowTitleCompletion(j.getCountOfLinkedType(), j.linkedCaseType.size());
         if(j.isLevelFinished){
             j.isLevelFinished = false;
             displayWin();
         }
     }
-
+    private void updateWindowTitleCompletion(int completed, int total){
+        String s = ""+completed+" / "+total+" completed";
+        setTitle(s);
+    }
     private void displayWin(){
         int n = JOptionPane.showConfirmDialog(
                 this,
