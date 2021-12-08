@@ -43,6 +43,9 @@ public class Jeu extends Observable {
         }
     }
 
+    public ArrayList<Chemin> getPaths(){
+        return paths;
+    }
     public void addPath(Chemin chemin) {
         if (validatePath(chemin)) {
             fillPathType(chemin);
@@ -326,4 +329,5 @@ public class Jeu extends Observable {
         setChanged();
         notifyObservers();
     }
+
 }

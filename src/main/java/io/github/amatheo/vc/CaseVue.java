@@ -14,6 +14,7 @@ public class CaseVue extends JPanel {
     public CaseVue(CaseModel caseModel) {
         this.caseModel = caseModel;
     }
+    public Color couleur;
 
     private void drawTop(Graphics g) {
         g.drawLine(getWidth()/2, getHeight()/2, getWidth()/2, 0);
@@ -51,12 +52,9 @@ public class CaseVue extends JPanel {
             g.setColor(Color.black);
         }
 
-        //g.drawRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
 
         Rectangle2D deltaText =  g.getFont().getStringBounds("0", g.getFontMetrics().getFontRenderContext()); // "0" utilisé pour gabarit
-
-
-
+        g.setColor(couleur);
         switch(caseModel.getType()) {
             case empty:
                 g.drawRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
@@ -112,6 +110,7 @@ public class CaseVue extends JPanel {
                 drawBottom(g);
                 break;
             case cross:
+                g.setColor(Color.black);
                 g.drawRoundRect(getWidth()/4, getHeight()/4, getWidth()/2, getHeight()/2, 5, 5);
                 drawTop(g);
                 drawBottom(g);

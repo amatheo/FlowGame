@@ -2,16 +2,14 @@ package io.github.amatheo.vc;
 
 import io.github.amatheo.listener.GridMouseListener;
 import io.github.amatheo.model.CaseType;
+import io.github.amatheo.model.Chemin;
 import io.github.amatheo.model.Jeu;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Observable;
-import java.util.Observer;
+import java.util.*;
 
 public class GrilleVue extends JFrame implements Observer {
     private static final int PIXEL_PER_SQUARE = 60;
@@ -35,6 +33,7 @@ public class GrilleVue extends JFrame implements Observer {
     }
     //Update view grid with current model grid
     public void updateVue(Jeu jeu){
+        //Update view grid with current model grid
         caseVueHashmap.clear();
         contentPane.removeAll();
         int size = jeu.getSize();
@@ -49,9 +48,41 @@ public class GrilleVue extends JFrame implements Observer {
 
             }
         }
+        //Mise a jour des couleur
+        updatePathColor(jeu.getPaths());
+
         setContentPane(contentPane);
     }
 
+    public void updatePathColor(ArrayList<Chemin> chemins){
+        for (Chemin c : chemins) {
+            for (Point p : c.getPoints()) {
+                caseVue[p.x][p.y].couleur = getColorBasedOnCaseType(c.getPathType());
+                caseVue[p.x][p.y].repaint();
+            }
+        }
+    }
+    public Color getColorBasedOnCaseType(CaseType type){
+        Color c = Color.black;
+        switch (type){
+            case S1 :
+                c = Color.BLUE;
+                break;
+            case S2 :
+                c = Color.cyan;
+                break;
+            case S3 :
+                c = Color.green;
+                break;
+            case S4 :
+                c = Color.MAGENTA;
+                break;
+            case S5:
+                c = Color.ORANGE;
+                break;
+        }
+        return c;
+    }
     public void setSelectedAtPosition(int x, int y){
         caseVue[x][y].isSelected = true;
         caseVue[x][y].repaint();
